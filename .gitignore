@@ -139,4 +139,10 @@ dist
 .DS_Store
 
 # VS 
-.vs/*
+[Dd]ebug/
+[Rr]elease/
+*.suo
+*.user
+*.sln.docstates
+*.csproj.user
+.vs/
