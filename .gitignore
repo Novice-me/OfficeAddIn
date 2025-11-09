@@ -138,5 +138,5 @@ dist
 # macOS Desktop Service Store
 .DS_Store
 
-# VS File Content Index
-.vs/OfficeAddIn/FileContentIndex/
+# VS 
+.vs/*
