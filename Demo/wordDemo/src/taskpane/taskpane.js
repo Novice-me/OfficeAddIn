@@ -20,6 +20,10 @@ Office.onReady((info) => {
     document.getElementById("insert-link").addEventListener("click", insertLink);
     document.getElementById("change-font").addEventListener("click", changeFont);
     document.getElementById("insert-list").addEventListener("click", insertList);
+
+    console.log("Office add-in initialized for Word. Event listeners attached.");
+  } else {
+    console.log("Add-in loaded in non-Word host:", info.host);
   }
 });
 
