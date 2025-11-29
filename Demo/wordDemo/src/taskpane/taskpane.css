@@ -14,10 +14,16 @@ body {
 /* Make the page a column flex container so the main area can center vertically */
 body {
     display: -webkit-flex;
+    display: -ms-flexbox;
     display: flex;
     -webkit-flex-direction: column;
+    -ms-flex-direction: column;
     flex-direction: column;
     min-height: 100vh;
+}
+
+#app-body {
+    display: none;
 }
  
  ul {
@@ -30,52 +36,141 @@ body {
     padding-bottom: 30px;
     padding-top: 100px;
     display: -webkit-flex;
+    display: -ms-flexbox;
     display: flex;
     -webkit-flex-direction: column;
+    -ms-flex-direction: column;
     flex-direction: column;
-    align-items: center;
  }
 
- .ms-welcome__main {
+.ms-welcome__main {
      display: -webkit-flex;
+     display: -ms-flexbox;
      display: flex;
      -webkit-flex-direction: column;
+     -ms-flex-direction: column;
      flex-direction: column;
-     -webkit-flex-wrap: nowrap;
-     flex-wrap: nowrap;
-     -webkit-align-items: center;
-     align-items: center;
-     -webkit-justify-content: center;
-     justify-content: center;
      -webkit-flex: 1 0 0;
+     -ms-flex: 1 0 0px;
      flex: 1 0 0;
-     padding: 10px 20px;
+     padding: 20px 24px 32px;
  }
  
  .ms-welcome__main > h2 {
      width: 100%;
-     text-align: center;
  }
- 
- .ms-welcome__features {
-     list-style-type: none;
-     margin-top: 20px;
- }
- 
- .ms-welcome__features.ms-List .ms-ListItem {
-     padding-bottom: 20px;
-     display: -webkit-flex;
-     display: flex;
- }
- 
- .ms-welcome__features.ms-List .ms-ListItem > .ms-Icon {
-     margin-right: 10px;
- }
- 
- .ms-welcome__action.ms-Button--hero {
-     margin-top: 30px;
- }
- 
+
+.guidance-text {
+    margin: 0;
+}
+
+.feature-section {
+    border: 1px solid #e1e1e6;
+    border-radius: 6px;
+    padding: 16px;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    margin-top: 12px;
+}
+
+.feature-section:first-of-type {
+    margin-top: 0;
+}
+
+.feature-section h3 {
+    margin: 0;
+}
+
+.feature-section p {
+    margin: 0;
+    color: #323130;
+}
+
+.feature-section > * + * {
+    margin-top: 12px;
+}
+
+.button-row {
+    display: block;
+}
+
+.button-row .ms-Button {
+    margin-right: 12px;
+    margin-bottom: 12px;
+}
+
+.button-row .ms-Button:last-of-type {
+    margin-right: 0;
+}
+
+.command-form {
+    display: block;
+}
+
+.command-form > * + * {
+    margin-top: 12px;
+}
+
+.input-group {
+    display: block;
+}
+
+.input-group > * + * {
+    margin-top: 4px;
+}
+
+.inline-group {
+    max-width: 180px;
+}
+
+.checkbox-group {
+    display: block;
+}
+
+.checkbox-group label {
+    margin-left: 8px;
+}
+
+.ms-TextField-field {
+    padding: 6px 8px;
+    border: 1px solid #c8c6c4;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.ms-TextField-field:focus {
+    outline: 1px solid #0078d7;
+    border-color: #0078d7;
+}
+
+.status-message {
+    min-height: 24px;
+    border-radius: 4px;
+    padding: 8px 12px;
+    background-color: #f3f2f1;
+    color: #323130;
+    border: 1px solid transparent;
+    margin-top: 12px;
+}
+
+.status-message.error {
+    border-color: #d13438;
+    background-color: #fde7e9;
+    color: #a4262c;
+}
+
+.status-message.success {
+    border-color: #107c10;
+    background-color: #dff6dd;
+    color: #0b6a0b;
+}
+
 .ms-Button.ms-Button--hero .ms-Button-label {
   color: #0078d7;
 }

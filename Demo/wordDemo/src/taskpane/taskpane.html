@@ -2,7 +2,7 @@
 <!-- This file shows how to design a first-run page that provides a welcome screen to the user about the features of the add-in. -->
 
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 
 <head>
     <meta charset="UTF-8" />
@@ -26,55 +26,129 @@
         <h1 class="ms-font-su">Welcome</h1>
     </header>
     <section id="sideload-msg" class="ms-welcome__main">
-        <h2 class="ms-font-xl">Please <a target="_blank" href="https://learn.microsoft.com/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing">sideload</a> your add-in to see app body.</h2>
+        <h2 class="ms-font-xl">Please <a target="_blank" rel="noopener noreferrer" href="https://learn.microsoft.com/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing">sideload</a> your add-in to see app body.</h2>
     </section>
-    <main id="app-body" class="ms-welcome__main" style="display: none;">
+    <main id="app-body" class="ms-welcome__main">
         <h2 class="ms-font-xl"> Discover what Office Add-ins can do for you today! </h2>
-        <ul class="ms-List ms-welcome__features">
-            <li class="ms-ListItem">
-                <i class="ms-Icon ms-Icon--Ribbon ms-font-xl"></i>
-                <span class="ms-font-m">Achieve more with Office integration</span>
-            </li>
-            <li class="ms-ListItem">
-                <i class="ms-Icon ms-Icon--Unlock ms-font-xl"></i>
-                <span class="ms-font-m">Unlock features and functionality</span>
-            </li>
-            <li class="ms-ListItem">
-                <i class="ms-Icon ms-Icon--Design ms-font-xl"></i>
-                <span class="ms-font-m">Create and visualize like a pro</span>
-            </li>
-        </ul>
-        <p class="ms-font-l">Modify the source files, then click <b>Run</b>.</p>
-        <button type="button" id="run" class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl">
-            <span class="ms-Button-label">Run</span>
-        </button>
-        <p class="ms-font-l">Or try inserting the current date:</p>
-        <button type="button" id="insert-date" class="ms-welcome__action ms-Button ms-Button--primary ms-font-xl">
-            <span class="ms-Button-label">Insert Date</span>
-        </button>
-        <p class="ms-font-l">More features:</p>
-        <button type="button" id="get-selected" class="ms-welcome__action ms-Button ms-Button--default ms-font-l">
-            <span class="ms-Button-label">Get Selected Text</span>
-        </button>
-        <button type="button" id="insert-table" class="ms-welcome__action ms-Button ms-Button--default ms-font-l">
-            <span class="ms-Button-label">Insert Table</span>
-        </button>
-        <button type="button" id="search-replace" class="ms-welcome__action ms-Button ms-Button--default ms-font-l">
-            <span class="ms-Button-label">Search & Replace</span>
-        </button>
-        <button type="button" id="doc-stats" class="ms-welcome__action ms-Button ms-Button--default ms-font-l">
-            <span class="ms-Button-label">Document Stats</span>
-        </button>
-        <button type="button" id="insert-link" class="ms-welcome__action ms-Button ms-Button--default ms-font-l">
-            <span class="ms-Button-label">Insert Link</span>
-        </button>
-        <button type="button" id="change-font" class="ms-welcome__action ms-Button ms-Button--default ms-font-l">
-            <span class="ms-Button-label">Change Font</span>
-        </button>
-        <button type="button" id="insert-list" class="ms-welcome__action ms-Button ms-Button--default ms-font-l">
-            <span class="ms-Button-label">Insert List</span>
-        </button>
-        <p><label id="item-subject"></label></p>
+        <p class="ms-font-m guidance-text">按照下方每个功能区的指引完成操作 (Follow the guidance in each section to try the commands).</p>
+
+        <section class="feature-section">
+            <h3 class="ms-font-l">Quick Start</h3>
+            <p>使用快速按钮插入示例内容，方便体验 Word API 功能 (Use these buttons to insert sample content while you explore Word APIs).</p>
+            <div class="button-row">
+                <button type="button" id="run" class="ms-Button ms-Button--hero ms-font-l">
+                    <span class="ms-Button-label">Insert Hello World</span>
+                </button>
+                <button type="button" id="insert-date" class="ms-Button ms-Button--primary ms-font-l">
+                    <span class="ms-Button-label">Insert Today&rsquo;s Date</span>
+                </button>
+            </div>
+        </section>
+
+        <section class="feature-section">
+            <h3 class="ms-font-l">Selection Helper</h3>
+            <p>先在文档中选取文本，再点按按钮在此查看结果 (Select text in your document, then click the button to display it here).</p>
+            <button type="button" id="get-selected" class="ms-Button ms-Button--default ms-font-m">
+                <span class="ms-Button-label">Get Selected Text</span>
+            </button>
+        </section>
+
+        <section class="feature-section">
+            <h3 class="ms-font-l">Sample Table</h3>
+            <p>一键在文档末尾插入 3&times;3 示例表格 (Quickly insert a 3&times;3 table at the end of the document).</p>
+            <button type="button" id="insert-table" class="ms-Button ms-Button--default ms-font-m">
+                <span class="ms-Button-label">Insert Sample Table</span>
+            </button>
+        </section>
+
+        <section class="feature-section">
+            <h3 class="ms-font-l">Search and Replace</h3>
+            <p>输入要查找与替换的内容，执行后即可批量更新文档 (Provide the text to find and replacement value to update the document).</p>
+            <form id="search-replace-form" class="command-form">
+                <div class="input-group">
+                    <label class="ms-font-s" for="search-text-input">Search for</label>
+                    <input id="search-text-input" type="text" class="ms-TextField-field" placeholder="e.g., Contoso" />
+                </div>
+                <div class="input-group">
+                    <label class="ms-font-s" for="replace-text-input">Replace with</label>
+                    <input id="replace-text-input" type="text" class="ms-TextField-field" placeholder="Leave blank to remove" />
+                </div>
+                <button type="submit" id="search-replace" class="ms-Button ms-Button--default ms-font-m">
+                    <span class="ms-Button-label">Run Search &amp; Replace</span>
+                </button>
+            </form>
+        </section>
+
+        <section class="feature-section">
+            <h3 class="ms-font-l">Document Statistics</h3>
+            <p>点击即可统计全文的词数、字符数与段落数 (Click to calculate the word, character, and paragraph counts).</p>
+            <button type="button" id="doc-stats" class="ms-Button ms-Button--default ms-font-m">
+                <span class="ms-Button-label">Calculate Stats</span>
+            </button>
+        </section>
+
+        <section class="feature-section">
+            <h3 class="ms-font-l">Insert a Link</h3>
+            <p>填写显示文本与目标链接，超链接会插入到光标所在位置 (Choose the display text and URL to insert a hyperlink at the cursor).</p>
+            <form id="insert-link-form" class="command-form">
+                <div class="input-group">
+                    <label class="ms-font-s" for="link-text-input">Display text</label>
+                    <input id="link-text-input" type="text" class="ms-TextField-field" placeholder="Text shown to readers" />
+                </div>
+                <div class="input-group">
+                    <label class="ms-font-s" for="link-url-input">URL</label>
+                    <input id="link-url-input" type="url" class="ms-TextField-field" placeholder="https://contoso.com" />
+                </div>
+                <button type="submit" id="insert-link" class="ms-Button ms-Button--default ms-font-m">
+                    <span class="ms-Button-label">Insert Link</span>
+                </button>
+            </form>
+        </section>
+
+        <section class="feature-section">
+            <h3 class="ms-font-l">Adjust Selected Font</h3>
+            <p>先选中目标文本，再选择要应用的格式选项 (Select text first, then pick the formatting you need).</p>
+            <form id="change-font-form" class="command-form">
+                <div class="input-group inline-group">
+                    <label class="ms-font-s" for="font-size-input">Font size</label>
+                    <input id="font-size-input" type="number" min="1" class="ms-TextField-field" placeholder="12" />
+                </div>
+                <div class="input-group inline-group">
+                    <label class="ms-font-s" for="font-color-input">Font color</label>
+                    <input id="font-color-input" type="text" class="ms-TextField-field" placeholder="e.g., #005a9e" />
+                </div>
+                <div class="input-group checkbox-group">
+                    <input id="font-bold-checkbox" type="checkbox" />
+                    <label class="ms-font-s" for="font-bold-checkbox">Apply bold</label>
+                </div>
+                <button type="submit" id="change-font" class="ms-Button ms-Button--default ms-font-m">
+                    <span class="ms-Button-label">Apply Formatting</span>
+                </button>
+            </form>
+        </section>
+
+        <section class="feature-section">
+            <h3 class="ms-font-l">Build a List</h3>
+            <p>每行输入一个列表项目，可选择项目符号或编号列表 (Enter one item per line and choose the list style).</p>
+            <form id="insert-list-form" class="command-form">
+                <div class="input-group">
+                    <label class="ms-font-s" for="list-type-select">List type</label>
+                    <select id="list-type-select" class="ms-TextField-field">
+                        <option value="bulleted">Bulleted</option>
+                        <option value="numbered">Numbered</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="ms-font-s" for="list-items-textarea">Items</label>
+                    <textarea id="list-items-textarea" class="ms-TextField-field" rows="3" placeholder="Item 1&#10;Item 2&#10;Item 3"></textarea>
+                </div>
+                <button type="submit" id="insert-list" class="ms-Button ms-Button--default ms-font-m">
+                    <span class="ms-Button-label">Insert List</span>
+                </button>
+            </form>
+        </section>
+
+        <div id="status-message" class="status-message ms-font-m" role="status" aria-live="polite"></div>
     </main>
 </body>
 

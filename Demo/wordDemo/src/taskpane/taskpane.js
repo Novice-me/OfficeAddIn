@@ -9,29 +9,76 @@ Office.onReady((info) => {
   if (info.host === Office.HostType.Word) {
     document.getElementById("sideload-msg").style.display = "none";
     document.getElementById("app-body").style.display = "flex";
-    
-    // Add event listeners for buttons
-    document.getElementById("run").addEventListener("click", run);
-    document.getElementById("insert-date").addEventListener("click", insertDate);
-    document.getElementById("get-selected").addEventListener("click", getSelectedText);
-    document.getElementById("insert-table").addEventListener("click", insertTable);
-    document.getElementById("search-replace").addEventListener("click", searchAndReplace);
-    document.getElementById("doc-stats").addEventListener("click", getDocumentStats);
-    document.getElementById("insert-link").addEventListener("click", insertLink);
-    document.getElementById("change-font").addEventListener("click", changeFont);
-    document.getElementById("insert-list").addEventListener("click", insertList);
 
+    const buttonBindings = [
+      ["run", run],
+      ["insert-date", insertDate],
+      ["get-selected", getSelectedText],
+      ["insert-table", insertTable],
+      ["doc-stats", getDocumentStats]
+    ];
+
+    const formBindings = [
+      ["search-replace-form", searchAndReplace],
+      ["insert-link-form", insertLink],
+      ["change-font-form", changeFont],
+      ["insert-list-form", insertList]
+    ];
+
+    buttonBindings.forEach(([elementId, handler]) => bindButton(elementId, handler));
+    formBindings.forEach(([formId, handler]) => bindForm(formId, handler));
+
+    showMessage("请选择下方一个功能区并按照提示操作。");
     console.log("Office add-in initialized for Word. Event listeners attached.");
   } else {
     console.log("Add-in loaded in non-Word host:", info.host);
   }
 });
 
+function bindButton(elementId, handler) {
+  const element = document.getElementById(elementId);
+  if (!element) {
+    console.warn(`Button with id "${elementId}" not found.`);
+    return;
+  }
+
+  element.addEventListener("click", async (event) => {
+    event.preventDefault();
+    try {
+      await handler();
+    } catch (error) {
+      console.error(`Error executing handler for ${elementId}:`, error);
+      showMessage(`执行操作时出错：${error.message}`, true);
+    }
+  });
+}
+
+function bindForm(formId, handler) {
+  const form = document.getElementById(formId);
+  if (!form) {
+    console.warn(`Form with id "${formId}" not found.`);
+    return;
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    try {
+      await handler();
+    } catch (error) {
+      console.error(`Error executing handler for ${formId}:`, error);
+      showMessage(`执行操作时出错：${error.message}`, true);
+    }
+  });
+}
+
 function showMessage(message, isError = false) {
-  const messageLabel = document.getElementById("item-subject");
-  if (messageLabel) {
-    messageLabel.textContent = message;
-    messageLabel.style.color = isError ? "#a4262c" : "";
+  const messageContainer = document.getElementById("status-message");
+  if (messageContainer) {
+    messageContainer.textContent = message || "";
+    messageContainer.classList.remove("error", "success");
+    if (message && message.trim()) {
+      messageContainer.classList.add(isError ? "error" : "success");
+    }
   }
 
   if (isError) {
@@ -74,6 +121,7 @@ export async function run() {
     paragraph.font.bold = true;
 
     await context.sync();
+    showMessage("已在文档末尾插入带格式的 \"Hello World\" 段落。");
   });
 }
 
@@ -88,6 +136,7 @@ export async function insertDate() {
     range.insertText(dateString, Word.InsertLocation.replace);
 
     await context.sync();
+    showMessage(`已插入日期 ${dateString}。`);
   });
 }
 
@@ -101,11 +150,9 @@ export async function getSelectedText() {
 
       const selectedText = range.text;
       if (selectedText.trim() === "") {
-        showMessage("No text selected. Please select some text first.");
-        alert("No text selected. Please select some text first.");
+        showMessage("未检测到选中文本，请先在 Word 中选择内容。", true);
       } else {
-        showMessage(`Selected text: "${selectedText}"`);
-        alert(`Selected text: "${selectedText}"`);
+        showMessage(`选中文本: "${selectedText}"`);
       }
     });
   } catch (error) {
@@ -135,40 +182,53 @@ export async function insertTable() {
       table.getCell(2, 2).body.insertText("Row 2, Col 3", Word.InsertLocation.replace);
 
       await context.sync();
+      showMessage("已在文档末尾插入 3x3 示例表格。");
     });
   } catch (error) {
     console.error("Error in insertTable:", error);
-    alert("Error inserting table: " + error.message);
+    showMessage("插入示例表格时出错: " + error.message, true);
   }
 }
 
 export async function searchAndReplace() {
   console.log("searchAndReplace called");
+  const searchInput = document.getElementById("search-text-input");
+  const replaceInput = document.getElementById("replace-text-input");
+
+  if (!searchInput) {
+    showMessage("未找到查找输入框，请重新加载任务窗格。", true);
+    return;
+  }
+
+  const searchText = searchInput.value.trim();
+  const replaceText = replaceInput ? replaceInput.value : "";
+
+  if (searchText.length === 0) {
+    showMessage("请输入要查找的内容。", true);
+    searchInput.focus();
+    return;
+  }
+
   try {
     return Word.run(async (context) => {
-      // Prompt user for search and replace text
-      const searchText = prompt("Enter text to search for:");
-      if (!searchText) return;
-
-      const replaceText = prompt("Enter replacement text:");
-      if (replaceText === null) return; // Allow empty string but not cancel
-
-      // Search for the text
-      const searchResults = context.document.body.search(searchText);
+      const searchResults = context.document.body.search(searchText, { matchWildcards: false });
       context.load(searchResults, "items");
       await context.sync();
 
       if (searchResults.items.length > 0) {
         // Replace all occurrences
-        for (let i = 0; i < searchResults.items.length; i++) {
-          searchResults.items[i].insertText(replaceText, Word.InsertLocation.replace);
-        }
+        searchResults.items.forEach((item) => {
+          item.insertText(replaceText, Word.InsertLocation.replace);
+        });
         await context.sync();
-        showMessage(`Replaced ${searchResults.items.length} occurrence(s) of "${searchText}" with "${replaceText}"`);
-        alert(`Replaced ${searchResults.items.length} occurrence(s) of "${searchText}" with "${replaceText}"`);
+        const replacementDescription = replaceText.trim().length > 0 ? `"${replaceText}"` : "空字符串";
+        showMessage(`已将 ${searchResults.items.length} 处 "${searchText}" 替换为 ${replacementDescription}。`);
+        if (replaceInput) {
+          replaceInput.focus();
+        }
       } else {
-        showMessage(`No "${searchText}" found in the document`);
-        alert(`No "${searchText}" found in the document`);
+        showMessage(`未在文档中找到 "${searchText}"，请调整检索内容。`, true);
+        searchInput.focus();
       }
     });
   } catch (error) {
@@ -189,23 +249,33 @@ export async function getDocumentStats() {
     const charCount = normalized.replace(/\n/g, "").length;
     const paragraphCount = normalized.trim().length === 0 ? 0 : normalized.split(/\n+/).filter(para => para.trim().length > 0).length;
 
-    const statsMessage = `Document Statistics — Words: ${wordCount}, Characters: ${charCount}, Paragraphs: ${paragraphCount}`;
+    const statsMessage = `文档统计 / Document Statistics — 词数: ${wordCount}, 字符数: ${charCount}, 段落: ${paragraphCount}`;
     showMessage(statsMessage);
-    alert(statsMessage);
   });
 }
 
 export async function insertLink() {
   console.log("insertLink called");
+  const linkTextInput = document.getElementById("link-text-input");
+  const linkUrlInput = document.getElementById("link-url-input");
+
+  if (!linkUrlInput) {
+    showMessage("未找到链接输入控件，请重新加载任务窗格。", true);
+    return;
+  }
+
+  const rawLinkText = linkTextInput ? linkTextInput.value.trim() : "";
+  const rawUrl = linkUrlInput.value.trim();
+
+  if (rawUrl.length === 0) {
+    showMessage("请输入有效的链接地址。", true);
+    linkUrlInput.focus();
+    return;
+  }
+
   try {
     return Word.run(async (context) => {
-      const linkText = prompt("Enter link text:");
-      if (linkText === null) return;
-
-      const linkUrl = prompt("Enter URL:");
-      if (!linkUrl) return;
-
-      let normalizedUrl = linkUrl.trim();
+      let normalizedUrl = rawUrl;
       if (!/^https?:\/\//i.test(normalizedUrl) && !/^mailto:/i.test(normalizedUrl)) {
         normalizedUrl = `https://${normalizedUrl}`;
       }
@@ -214,7 +284,7 @@ export async function insertLink() {
       range.load("text");
       await context.sync();
 
-      const displayText = linkText.trim().length > 0 ? linkText.trim() : normalizedUrl;
+      const displayText = rawLinkText.length > 0 ? rawLinkText : normalizedUrl;
       const sanitizedText = sanitizeForHtml(displayText);
       const sanitizedUrl = sanitizeForHtml(normalizedUrl);
 
@@ -225,9 +295,11 @@ export async function insertLink() {
       }
 
       await context.sync();
-      const linkMsg = `Inserted link: ${displayText} (${normalizedUrl})`;
+      const linkMsg = `已插入链接：${displayText} (${normalizedUrl})`;
       showMessage(linkMsg);
-      alert(linkMsg);
+      if (linkTextInput) {
+        linkTextInput.focus();
+      }
     });
   } catch (error) {
     console.error("Error in insertLink:", error);
@@ -237,6 +309,27 @@ export async function insertLink() {
 
 export async function changeFont() {
   console.log("changeFont called");
+  const fontSizeInput = document.getElementById("font-size-input");
+  const fontColorInput = document.getElementById("font-color-input");
+  const boldCheckbox = document.getElementById("font-bold-checkbox");
+
+  if (!fontSizeInput) {
+    showMessage("未找到字号输入控件，请重新加载任务窗格。", true);
+    return;
+  }
+
+  const fontSizeValue = fontSizeInput.value.trim();
+  const parsedFontSize = Number(fontSizeValue);
+
+  if (!fontSizeValue || !Number.isFinite(parsedFontSize) || parsedFontSize <= 0) {
+    showMessage("请输入大于 0 的字号数值。", true);
+    fontSizeInput.focus();
+    return;
+  }
+
+  const fontColorValue = fontColorInput ? fontColorInput.value.trim() : "";
+  const makeBold = Boolean(boldCheckbox && boldCheckbox.checked);
+
   try {
     return Word.run(async (context) => {
       const range = context.document.getSelection();
@@ -244,35 +337,20 @@ export async function changeFont() {
       await context.sync();
 
       if (range.text.trim() === "") {
-        showMessage("Please select some text first to change its font.");
+        showMessage("请先在文档中选择要设置的文本。", true);
         return;
       }
-
-      const fontSize = prompt("Enter font size (e.g., 12, 14, 16):", "12");
-      if (fontSize === null) return;
-
-      const parsedFontSize = Number(fontSize);
-      if (!Number.isFinite(parsedFontSize) || parsedFontSize <= 0) {
-        showMessage("Please provide a valid positive number for the font size.", true);
-        return;
-      }
-
-      const fontColor = prompt("Enter font color (e.g., red, blue, #FF0000):", "black");
-      if (fontColor === null) return;
-
-      const makeBold = confirm("Make text bold?");
 
       // Apply font changes
       range.font.size = parsedFontSize;
-      if (fontColor.trim().length > 0) {
-        range.font.color = fontColor.trim();
+      if (fontColorValue.length > 0) {
+        range.font.color = fontColorValue;
       }
       range.font.bold = makeBold;
 
       await context.sync();
-      const fontMsg = `Font changed to ${parsedFontSize}pt${fontColor.trim().length > 0 ? `, color ${fontColor.trim()}` : ""}${makeBold ? ", bold" : ""}`;
+      const fontMsg = `已应用字号 ${parsedFontSize}pt${fontColorValue.length > 0 ? `，颜色 ${fontColorValue}` : ""}${makeBold ? "，并加粗" : ""}。`;
       showMessage(fontMsg);
-      alert(fontMsg);
     });
   } catch (error) {
     console.error("Error in changeFont:", error);
@@ -282,28 +360,39 @@ export async function changeFont() {
 
 export async function insertList() {
   console.log("insertList called");
+  const listTypeSelect = document.getElementById("list-type-select");
+  const listItemsTextarea = document.getElementById("list-items-textarea");
+
+  if (!listItemsTextarea) {
+    showMessage("未找到列表输入控件，请重新加载任务窗格。", true);
+    return;
+  }
+
+  const listType = listTypeSelect ? listTypeSelect.value : "bulleted";
+  const rawItems = listItemsTextarea.value || "";
+  const items = rawItems
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+
+  if (items.length === 0) {
+    showMessage("请至少输入一行列表项目。", true);
+    listItemsTextarea.focus();
+    return;
+  }
+
   try {
     return Word.run(async (context) => {
-      const listType = confirm("Create numbered list? (Cancel for bulleted list)");
-      const listItems = prompt("Enter list items (separate with commas):", "Item 1, Item 2, Item 3");
-      if (!listItems) return;
-
-      const items = listItems.split(',').map(item => item.trim()).filter(item => item.length > 0);
-
-      if (items.length === 0) {
-        showMessage("No valid items entered.");
-        return;
-      }
-
       const range = context.document.getSelection();
       const listHtml = items.map((item) => `<li>${sanitizeForHtml(item)}</li>`).join("");
-      const wrappedList = listType ? `<ol>${listHtml}</ol>` : `<ul>${listHtml}</ul>`;
+      const useNumbered = listType === "numbered";
+      const wrappedList = useNumbered ? `<ol>${listHtml}</ol>` : `<ul>${listHtml}</ul>`;
 
       range.insertHtml(wrappedList, Word.InsertLocation.replace);
       await context.sync();
-      const listMsg = `${listType ? 'Numbered' : 'Bulleted'} list inserted successfully!`;
+      const listMsg = `${useNumbered ? "已插入编号列表" : "已插入项目符号列表"}，共 ${items.length} 项。`;
       showMessage(listMsg);
-      alert(listMsg);
+      listItemsTextarea.focus();
     });
   } catch (error) {
     console.error("Error in insertList:", error);
